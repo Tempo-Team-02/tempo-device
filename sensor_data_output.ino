@@ -2,7 +2,7 @@
 #include <ICM_20948.h>                        // IMU
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h> // GPS
 
-// --------- Global objects ---------
+// Global objects
 ICM_20948_I2C imu;
 SFE_UBLOX_GNSS gps;
 
@@ -11,7 +11,7 @@ bool gpsOK = false;
 
 #define RAD_TO_DEG 57.2957795f
 
-// -------------------------------------------------------------
+
 void setup() {
   Serial.begin(115200);
   delay(2000);
@@ -20,10 +20,10 @@ void setup() {
   Serial.println("==== Feather RP2040 USB Host (STEMMA QT IMU+GPS) ====");
   Serial.println("Printing IMU+GPS+Orientation once per second...\n");
 
-  // Start I²C on STEMMA QT pins
+  // Start I2c
   Wire.begin();
 
-  // -------- Initialize IMU (ICM-20948) --------
+  // Initialize IMU
   Serial.println("Initializing IMU (ICM-20948)...");
   ICM_20948_Status_e imuStatus;
 
@@ -44,7 +44,7 @@ void setup() {
     }
   }
 
-  // -------- Initialize GPS (MAX-M10S over I²C) --------
+  // Initialize GPS 
   Serial.println("Initializing GPS (MAX-M10S) over I2C (0x42)...");
   if (gps.begin(Wire) == false) {
     Serial.println("GPS NOT detected on I2C. gpsOK = false.");
@@ -59,7 +59,7 @@ void setup() {
   Serial.println("\nInitialization complete.\n");
 }
 
-// -------------------------------------------------------------
+
 void loop() {
   static unsigned long lastPrint = 0;
   unsigned long now = millis();
@@ -67,7 +67,7 @@ void loop() {
   if (now - lastPrint < 1000) return;
   lastPrint = now;
 
-  // ---------- VARIABLES TO POPULATE ----------
+  // VARIABLES TO POPULATE
   float ax_raw=0, ay_raw=0, az_raw=0;
   float ax_ms2=0, ay_ms2=0, az_ms2=0;
   float gx=0, gy=0, gz=0;
@@ -77,19 +77,19 @@ void loop() {
   uint8_t sats=0;
   float yaw_deg=0, pitch_deg=0, roll_deg=0;
 
-  // ============================================================
+ 
   //  IMU SECTION (Accel / Gyro / Mag + Orientation)
-  // ============================================================
+  
   if (imuOK && imu.dataReady()) {
 
     imu.getAGMT(); // Read accel, gyro, mag
 
-    // ---- RAW accelerometer (mg) ----
+    // RAW accelerometer (mg)
     ax_raw = imu.accX();
     ay_raw = imu.accY();
     az_raw = imu.accZ();
 
-    // ---- Convert mg → m/s² ----
+    // Convert mg to m/s^2
     ax_ms2 = ax_raw * 9.81f / 1000.0f;
     ay_ms2 = ay_raw * 9.81f / 1000.0f;
     az_ms2 = az_raw * 9.81f / 1000.0f;
@@ -102,9 +102,9 @@ void loop() {
     my = imu.magY();
     mz = imu.magZ();
 
-    // ---- Orientation estimation (simple tilt + compass) ----
+    // Orientation estimation 
     // 1) Compute pitch and roll from accelerometer
-    // Convert accel to "g" units first (just for clarity)
+    // Convert accel to g units 
     float ax_g = ax_raw / 1000.0f;
     float ay_g = ay_raw / 1000.0f;
     float az_g = az_raw / 1000.0f;
@@ -133,9 +133,9 @@ void loop() {
     if (yaw_deg < 0) yaw_deg += 360.0f;       // normalize to 0–360
   }
 
-  // ============================================================
+ 
   //  GPS SECTION
-  // ============================================================
+  
   if (gpsOK && gps.getPVT()) {
 
     int32_t rawLat    = gps.getLatitude();      // 1e-7 degrees
@@ -150,9 +150,9 @@ void loop() {
     sats      = gps.getSIV();
   }
 
-  // ============================================================
+  
   //  SERIAL OUTPUT
-  // ============================================================
+  
   Serial.println("--------------------------------------------------");
   Serial.print("Time (ms): ");
   Serial.println(now);
@@ -197,12 +197,12 @@ void loop() {
   Serial.print("  Satellites: ");
   Serial.println(sats);
 
-  // ============================================================
-  //  CSV OUTPUT (copy/paste directly into Excel!) (later integration on microsd)
+  // 
+  //  CSV OUTPUT 
   //  Format:
   //  CSV,time_ms,ax_raw,ay_raw,az_raw,ax_ms2,ay_ms2,az_ms2,gx,gy,gz,
   //      mx,my,mz,lat,lon,alt_m,speed_kmh,sats,yaw_deg,pitch_deg,roll_deg
-  // ============================================================
+  // 
   Serial.print("CSV,");
   Serial.print(now); Serial.print(",");
   Serial.print(ax_raw); Serial.print(",");
